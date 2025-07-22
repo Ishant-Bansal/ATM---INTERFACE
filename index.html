@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ATM System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            max-width: 450px;
+            width: 100%;
+        }
+
+        .logo {
+            font-size: 2.5rem;
+            color: #667eea;
+            margin-bottom: 30px;
+            font-weight: bold;
+        }
+
+        h2 {
+            color: #333;
+            margin-bottom: 25px;
+            font-weight: 600;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        input[type="password"],
+        input[type="number"] {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e1e1e1;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        input[type="password"]:focus,
+        input[type="number"]:focus {
+            border-color: #667eea;
+            outline: none;
+            transform: translateY(-2px);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 10px 0;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        }
+
+        .btn-logout {
+            background: linear-gradient(135deg, #fc466b 0%, #3f5efb 100%);
+            width: auto;
+            padding: 10px 20px;
+            font-size: 14px;
+        }
+
+        .error {
+            color: #e74c3c;
+            margin: 15px 0;
+            padding: 10px;
+            background: rgba(231, 76, 60, 0.1);
+            border-radius: 8px;
+            border-left: 4px solid #e74c3c;
+        }
+
+        .success {
+            color: #27ae60;
+            margin: 15px 0;
+            padding: 10px;
+            background: rgba(39, 174, 96, 0.1);
+            border-radius: 8px;
+            border-left: 4px solid #27ae60;
+        }
+
+        .balance-display {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+            font-size: 1.4rem;
+            font-weight: bold;
+        }
+
+        .menu-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 25px 0;
+        }
+
+        .amount-section {
+            margin: 20px 0;
+            padding: 20px;
+            background: rgba(102, 126, 234, 0.05);
+            border-radius: 15px;
+        }
+
+        .logout-section {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #eee;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 30px 20px;
+                margin: 20px;
+            }
+            
+            .menu-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        {% if not authenticated %}
+            <!-- Login Screen -->
+            <div class="logo">🏧 ATM</div>
+            <h2>Welcome to ATM System</h2>
+            
+            {% if error %}
+                <div class="error">{{ error }}</div>
+            {% endif %}
+            
+            {% if not block %}
+                <form action="/login" method="POST">
+                    <div class="form-group">
+                        <label for="pin">Enter PIN:</label>
+                        <input type="password" id="pin" name="pin" maxlength="4" required>
+                    </div>
+                    <button type="submit" class="btn">Login</button>
+                </form>
+                <small style="color: #666; margin-top: 15px; display: block;">
+                    Default PIN: 9680
+                </small>
+            {% else %}
+                <button onclick="window.location.reload()" class="btn">Try Again</button>
+            {% endif %}
+
+        {% else %}
+            <!-- Dashboard Screen -->
+            <div class="logo">🏧 ATM Dashboard</div>
+            
+            <div class="balance-display">
+                💰 Current Balance: ₹{{ balance }}
+            </div>
+            
+            {% if message %}
+                <div class="success">{{ message }}</div>
+            {% endif %}
+            
+            <div class="menu-grid">
+                <button onclick="checkBalance()" class="btn btn-success">
+                    📊 Check Balance
+                </button>
+                <button onclick="toggleDeposit()" class="btn btn-secondary">
+                    💵 Deposit
+                </button>
+                <button onclick="toggleWithdraw()" class="btn btn-danger">
+                    💸 Withdraw
+                </button>
+                <a href="/logout" class="btn btn-logout">
+                    🚪 Logout
+                </a>
+            </div>
+            
+            <!-- Deposit Section -->
+            <div id="depositSection" class="amount-section" style="display: none;">
+                <h3>💵 Deposit Money</h3>
+                <form action="/deposit" method="POST">
+                    <div class="form-group">
+                        <label for="depositAmount">Amount to Deposit:</label>
+                        <input type="number" id="depositAmount" name="amount" min="1" step="0.01" required>
+                    </div>
+                    <button type="submit" class="btn btn-secondary">Deposit</button>
+                    <button type="button" onclick="hideAll()" class="btn" style="background: #95a5a6;">Cancel</button>
+                </form>
+            </div>
+            
+            <!-- Withdraw Section -->
+            <div id="withdrawSection" class="amount-section" style="display: none;">
+                <h3>💸 Withdraw Money</h3>
+                <form action="/withdraw" method="POST">
+                    <div class="form-group">
+                        <label for="withdrawAmount">Amount to Withdraw:</label>
+                        <input type="number" id="withdrawAmount" name="amount" min="1" step="0.01" max="{{ balance }}" required>
+                    </div>
+                    <button type="submit" class="btn btn-danger">Withdraw</button>
+                    <button type="button" onclick="hideAll()" class="btn" style="background: #95a5a6;">Cancel</button>
+                </form>
+            </div>
+        {% endif %}
+    </div>
+
+    <script>
+        function checkBalance() {
+            window.location.href = '/check_balance';
+        }
+
+        function toggleDeposit() {
+            hideAll();
+            document.getElementById('depositSection').style.display = 'block';
+        }
+
+        function toggleWithdraw() {
+            hideAll();
+            document.getElementById('withdrawSection').style.display = 'block';
+        }
+
+        function hideAll() {
+            document.getElementById('depositSection').style.display = 'none';
+            document.getElementById('withdrawSection').style.display = 'none';
+        }
+
+        // Auto-hide messages after 3 seconds
+        setTimeout(function() {
+            var messages = document.querySelectorAll('.success, .error');
+            messages.forEach(function(msg) {
+                if (!msg.textContent.includes('Too many')) {
+                    msg.style.opacity = '0';
+                    setTimeout(() => msg.remove(), 500);
+                }
+            });
+        }, 3000);
+    </script>
+</body>
+</html>
